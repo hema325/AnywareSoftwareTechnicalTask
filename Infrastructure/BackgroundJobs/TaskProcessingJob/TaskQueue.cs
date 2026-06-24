@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Application.Common.Contracts;
 
-namespace Infrastructure.BackgroundJobs
+namespace Infrastructure.BackgroundJobs.TaskProcessingJob
 {
     internal sealed class TaskQueue : ITaskQueue
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Infrastructure.BackgroundJobs.Settings
+namespace Infrastructure.BackgroundJobs.TaskProcessingJob.Settings
 {
     public class TaskWorkerSettings
     {

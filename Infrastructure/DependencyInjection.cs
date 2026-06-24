@@ -1,7 +1,7 @@
 using Infrastructure.Authentication;
 using Infrastructure.Authentication.Settings;
-using Infrastructure.BackgroundJobs;
-using Infrastructure.BackgroundJobs.Settings;
+using Infrastructure.BackgroundJobs.TaskProcessingJob;
+using Infrastructure.BackgroundJobs.TaskProcessingJob.Settings;
 using Infrastructure.Persistance;
 using Infrastructure.Persistance.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

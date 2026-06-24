@@ -1,4 +1,4 @@
-using Infrastructure.BackgroundJobs.Settings;
+using Infrastructure.BackgroundJobs.TaskProcessingJob.Settings;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Infrastructure.BackgroundJobs
+namespace Infrastructure.BackgroundJobs.TaskProcessingJob
 {
     internal sealed class TaskProcessingWorker : BackgroundService
     {
@@ -53,7 +53,6 @@ namespace Infrastructure.BackgroundJobs
                 return;
             }
 
-            // Update the task status to InProgress
             task.Status = TaskItemStatus.InProgress;
             await context.SaveChangesAsync(stoppingToken);
             _logger.LogInformation("Started processing task {TaskId} ({Title}).", task.Id, task.Title);
@@ -61,7 +60,6 @@ namespace Infrastructure.BackgroundJobs
             // Simulate task processing
             await Task.Delay(_settings.ProcessingTime, stoppingToken);
 
-            // Update the task status to Done
             task.Status = TaskItemStatus.Done;
             await context.SaveChangesAsync(stoppingToken);
             _logger.LogInformation("Finished task {TaskId} ({Title}).", task.Id, task.Title);
