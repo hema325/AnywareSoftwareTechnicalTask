@@ -1,9 +1,13 @@
 using Infrastructure.Authentication;
+using Infrastructure.Authentication.Settings;
 using Infrastructure.Persistance;
 using Infrastructure.Persistance.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Infrastructure
 {
@@ -23,10 +27,36 @@ namespace Infrastructure
             services.Configure<SeedSettings>(configuration.GetSection(SeedSettings.SectionName));
 
             // authentication
+
             services
                 .AddScoped<IPasswordHasher, PasswordHasherService>()
-                .AddScoped<ICurrentUser, CurrentUserService>();
-            
+                .AddScoped<ICurrentUser, CurrentUserService>()
+                .AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+            services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()!;
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtSettings.Issuer,
+                        ValidAudience = jwtSettings.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+
+            services.AddAuthorization();
+
+            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+
+
             return services;
         }
 
