@@ -1,5 +1,7 @@
 using Infrastructure.Authentication;
 using Infrastructure.Authentication.Settings;
+using Infrastructure.BackgroundJobs;
+using Infrastructure.BackgroundJobs.Settings;
 using Infrastructure.Persistance;
 using Infrastructure.Persistance.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -27,7 +29,6 @@ namespace Infrastructure
             services.Configure<SeedSettings>(configuration.GetSection(SeedSettings.SectionName));
 
             // authentication
-
             services
                 .AddScoped<IPasswordHasher, PasswordHasherService>()
                 .AddScoped<ICurrentUser, CurrentUserService>()
@@ -56,17 +57,20 @@ namespace Infrastructure
 
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
+            // background jobs
+            services.AddHostedService<TaskProcessingWorker>();
+            services.AddSingleton<ITaskQueue, TaskQueue>();
+
+            services.Configure<TaskWorkerSettings>(configuration.GetSection(TaskWorkerSettings.SectionName));
 
             return services;
         }
 
         public static async Task InitializeDBAsync(this IServiceProvider serviceProvider)
         {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var initializer = scope.ServiceProvider.GetRequiredService<AppDbContextInitializer>();
-                await initializer.InitializeAsync();
-            }
+            using var scope = serviceProvider.CreateScope();
+            var initializer = scope.ServiceProvider.GetRequiredService<AppDbContextInitializer>();
+            await initializer.InitializeAsync();
         }
 
     }

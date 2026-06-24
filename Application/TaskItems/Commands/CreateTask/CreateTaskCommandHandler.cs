@@ -9,11 +9,13 @@ namespace Application.TaskItems.Commands.CreateTask
     {
         private readonly IAppDbContext _context;
         private readonly ICurrentUser _currentUser;
+        private readonly ITaskQueue _taskQueue;
 
-        public CreateTaskCommandHandler(IAppDbContext context, ICurrentUser currentUser)
+        public CreateTaskCommandHandler(IAppDbContext context, ICurrentUser currentUser, ITaskQueue taskQueue)
         {
             _context = context;
             _currentUser = currentUser;
+            _taskQueue = taskQueue;
         }
 
         public async Task<int> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
@@ -42,6 +44,8 @@ namespace Application.TaskItems.Commands.CreateTask
 
             _context.TaskItems.Add(task);
             await _context.SaveChangesAsync(cancellationToken);
+            
+            _taskQueue.Enqueue(task.Id);
 
             return task.Id;
         }
