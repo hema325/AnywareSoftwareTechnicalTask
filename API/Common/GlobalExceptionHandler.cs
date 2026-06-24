@@ -6,11 +6,31 @@ namespace API.Common
 {
     internal sealed class GlobalExceptionHandler : IExceptionHandler
     {
+        private readonly ILogger<GlobalExceptionHandler> _logger;
+
+        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+        {
+            _logger = logger;
+        }
+
         public async ValueTask<bool> TryHandleAsync(
             HttpContext httpContext,
             Exception exception,
             CancellationToken cancellationToken)
         {
+            if (exception is AppException)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Application exception occurred");
+            }
+            else
+            {
+                _logger.LogError(
+                    exception,
+                    "Unhandled exception occurred");
+            }
+
             var problem = new ProblemDetails
             {
                 Status = (exception as AppException)?.StatusCode ?? StatusCodes.Status500InternalServerError,
