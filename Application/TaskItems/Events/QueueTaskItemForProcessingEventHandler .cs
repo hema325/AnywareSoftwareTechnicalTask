@@ -1,7 +1,6 @@
 ﻿using Application.Common.Contracts;
 using Domain.Events;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.TaskItems.Events
@@ -21,7 +20,7 @@ namespace Application.TaskItems.Events
 
         public async Task Handle(TaskItemCreatedEvent notification, CancellationToken cancellationToken)
         {
-            _taskQueue.Enqueue(notification.Id);
+            _taskQueue.Enqueue(notification.Task.Id);
         }
     }
 }

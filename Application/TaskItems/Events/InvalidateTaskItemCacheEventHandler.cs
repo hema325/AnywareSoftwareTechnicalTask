@@ -18,9 +18,9 @@ namespace Application.TaskItems.Events
 
         public async Task Handle(TaskItemUpdatedEvent notification, CancellationToken cancellationToken)
         {
-            var key = $"{nameof(TaskItem)}_{notification.Id}";
+            var key = $"{nameof(TaskItem)}_{notification.Task.Id}";
             await _cache.RemoveAsync(key, cancellationToken);
-            _logger.LogInformation("Task {TaskId} updated and cache invalidated for key {CacheKey}", notification.Id, key);
+            _logger.LogInformation("Task {TaskId} updated and cache invalidated for key {CacheKey}", notification.Task.Id, key);
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Infrastructure.BackgroundJobs.TaskProcessingJob
             }
 
             task.Status = TaskItemStatus.InProgress;
-            task.AddDomainEvent(new TaskItemUpdatedEvent(task.Id));
+            task.AddDomainEvent(new TaskItemUpdatedEvent(task));
             await context.SaveChangesAsync(stoppingToken);
             _logger.LogInformation("Started processing task {TaskId} ({Title}).", task.Id, task.Title);
 
@@ -63,7 +63,7 @@ namespace Infrastructure.BackgroundJobs.TaskProcessingJob
             await Task.Delay(_settings.ProcessingTime, stoppingToken);
 
             task.Status = TaskItemStatus.Done;
-            task.AddDomainEvent(new TaskItemUpdatedEvent(task.Id));
+            task.AddDomainEvent(new TaskItemUpdatedEvent(task));
             await context.SaveChangesAsync(stoppingToken);
             _logger.LogInformation("Finished task {TaskId} ({Title}).", task.Id, task.Title);
         }

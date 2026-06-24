@@ -30,7 +30,7 @@ namespace Application.TaskItems.Commands.UpdateTaskStatus
 
             task.Status = request.Status;
 
-            task.AddDomainEvent(new TaskItemUpdatedEvent(task.Id));
+            task.AddDomainEvent(new TaskItemUpdatedEvent(task));
             await _context.SaveChangesAsync(cancellationToken);
         }
     }

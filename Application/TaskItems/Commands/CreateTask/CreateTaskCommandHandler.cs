@@ -1,5 +1,6 @@
 using Application.Common.Contracts;
 using Application.Common.Exceptions;
+using Domain.Events;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,6 +43,7 @@ namespace Application.TaskItems.Commands.CreateTask
                 OwnerId = ownerId
             };
 
+            task.AddDomainEvent(new TaskItemCreatedEvent(task));
             _context.TaskItems.Add(task);
             await _context.SaveChangesAsync(cancellationToken);
 

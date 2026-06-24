@@ -21,12 +21,9 @@ namespace Application.TaskItems.Events
 
         public async Task Handle(TaskItemUpdatedEvent notification, CancellationToken cancellationToken)
         {
-            var isPending = await _context.TaskItems
-                .AnyAsync(task => task.Id == notification.Id && task.Status == TaskItemStatus.Pending);
-            
-            if (isPending)
+            if (notification.Task.Status == TaskItemStatus.Pending)
             {
-                _taskQueue.Enqueue(notification.Id);
+                _taskQueue.Enqueue(notification.Task.Id);
             }
         }
     }

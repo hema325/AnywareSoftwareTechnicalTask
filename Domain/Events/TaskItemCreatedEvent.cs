@@ -1,4 +1,4 @@
 ﻿namespace Domain.Events
 {
-    public record TaskItemCreatedEvent(int Id) : EventBase;
+    public record TaskItemCreatedEvent(TaskItem Task) : EventBase;
 }
