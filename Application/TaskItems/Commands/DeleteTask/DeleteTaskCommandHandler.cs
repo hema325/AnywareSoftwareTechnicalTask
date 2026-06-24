@@ -1,5 +1,6 @@
 using Application.Common.Contracts;
 using Application.Common.Exceptions;
+using Domain.Events;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,7 @@ namespace Application.TaskItems.Commands.DeleteTask
                 throw new NotFoundException($"Task {request.Id} was not found.");
             }
 
+            task.AddDomainEvent(new TaskItemDeletedEvent(task));
             _context.TaskItems.Remove(task);
             await _context.SaveChangesAsync(cancellationToken);
         }
