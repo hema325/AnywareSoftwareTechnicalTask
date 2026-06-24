@@ -44,10 +44,10 @@ namespace API.Controllers
             return CreatedAtAction(nameof(GetUserById), new { id }, id);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateUser(UpdateUserCommand command, CancellationToken cancellationToken)
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserCommand command, CancellationToken cancellationToken)
         {
-            await _sender.Send(command, cancellationToken);
+            await _sender.Send(command with { Id = id }, cancellationToken);
             return NoContent();
         }
 
