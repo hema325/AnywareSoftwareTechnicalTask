@@ -6,5 +6,7 @@ namespace Application.Common.Contracts
     {
         DbSet<User> Users { get; }
         DbSet<TaskItem> TaskItems { get; }
+
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

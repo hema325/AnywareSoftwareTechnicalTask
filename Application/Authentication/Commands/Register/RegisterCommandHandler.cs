@@ -1,0 +1,39 @@
+using Application.Common.Authentication;
+using Application.Common.Contracts;
+using MediatR;
+
+namespace Application.Authentication.Commands.Register
+{
+    internal sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, JwtToken>
+    {
+        private readonly IAppDbContext _context;
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly IJwtTokenGenerator _tokenGenerator;
+
+        public RegisterCommandHandler(
+            IAppDbContext context,
+            IPasswordHasher passwordHasher,
+            IJwtTokenGenerator tokenGenerator)
+        {
+            _context = context;
+            _passwordHasher = passwordHasher;
+            _tokenGenerator = tokenGenerator;
+        }
+
+        public async Task<JwtToken> Handle(RegisterCommand request, CancellationToken cancellationToken)
+        {
+            var user = new User
+            {
+                Name = request.Name,
+                Email = request.Email,
+                HashedPassword = _passwordHasher.HashPassword(request.Password),
+                Role = UserRole.User
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return _tokenGenerator.Generate(user);
+        }
+    }
+}

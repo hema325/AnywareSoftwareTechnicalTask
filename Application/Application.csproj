@@ -11,15 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Authentication\Commands\" />
-    <Folder Include="Authentication\Dtos\" />
-    <Folder Include="Authentication\Queries\" />
     <Folder Include="TaskItems\Commands\" />
     <Folder Include="TaskItems\Dtos\" />
     <Folder Include="TaskItems\Queries\" />
-    <Folder Include="Users\Commands\" />
-    <Folder Include="Users\Dtos\" />
-    <Folder Include="Users\Queries\" />
   </ItemGroup>
 
   <ItemGroup>
