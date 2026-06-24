@@ -2,6 +2,7 @@ using Infrastructure.Authentication;
 using Infrastructure.Authentication.Settings;
 using Infrastructure.BackgroundJobs.TaskProcessingJob;
 using Infrastructure.BackgroundJobs.TaskProcessingJob.Settings;
+using Infrastructure.Caching;
 using Infrastructure.Persistance;
 using Infrastructure.Persistance.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using System.Text;
 
 namespace Infrastructure
@@ -62,6 +64,15 @@ namespace Infrastructure
             services.AddSingleton<ITaskQueue, TaskQueue>();
 
             services.Configure<TaskWorkerSettings>(configuration.GetSection(TaskWorkerSettings.SectionName));
+
+            // cache
+            services
+            .AddScoped<ICache, RedisCacheService>()
+                .AddSingleton<IConnectionMultiplexer>(_ =>
+                {
+                    var connectionString = configuration["Redis:ConnectionString"]!;
+                    return ConnectionMultiplexer.Connect(connectionString);
+                });
 
             return services;
         }
