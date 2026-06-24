@@ -4,6 +4,7 @@ using Infrastructure.BackgroundJobs.TaskProcessingJob;
 using Infrastructure.BackgroundJobs.TaskProcessingJob.Settings;
 using Infrastructure.Caching;
 using Infrastructure.Persistance;
+using Infrastructure.Persistance.Interceptors;
 using Infrastructure.Persistance.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -21,12 +22,17 @@ namespace Infrastructure
         {
 
             // database
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<AppDbContext>((sp, options) =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
+
+            });
 
             services
                 .AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>())
-                .AddScoped<AppDbContextInitializer>();
+                .AddScoped<AppDbContextInitializer>()
+                .AddScoped<PublishDomainEventsInterceptor>();
 
             services.Configure<SeedSettings>(configuration.GetSection(SeedSettings.SectionName));
 

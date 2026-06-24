@@ -24,7 +24,7 @@ namespace Application.TaskItems.Queries.GetTaskById
 
         public async Task<TaskItemDto> Handle(GetTaskByIdQuery request, CancellationToken cancellationToken)
         {
-            var key = $"TaskItem_{request.Id}";
+            var key = $"{nameof(TaskItem)}_{request.Id}";
             var task = await _cache.GetAsync<TaskItem>(key, cancellationToken);
 
             if(task == null)

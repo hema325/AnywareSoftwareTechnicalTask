@@ -44,8 +44,6 @@ namespace Application.TaskItems.Commands.CreateTask
 
             _context.TaskItems.Add(task);
             await _context.SaveChangesAsync(cancellationToken);
-            
-            _taskQueue.Enqueue(task.Id);
 
             return task.Id;
         }

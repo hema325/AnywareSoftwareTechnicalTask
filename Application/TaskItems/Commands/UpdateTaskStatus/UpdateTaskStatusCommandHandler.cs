@@ -1,5 +1,6 @@
 using Application.Common.Contracts;
 using Application.Common.Exceptions;
+using Domain.Events;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,8 @@ namespace Application.TaskItems.Commands.UpdateTaskStatus
             }
 
             task.Status = request.Status;
+
+            task.AddDomainEvent(new TaskItemUpdatedEvent(task.Id));
             await _context.SaveChangesAsync(cancellationToken);
         }
     }
