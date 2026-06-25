@@ -42,7 +42,7 @@ namespace Infrastructure
             services
                 .AddScoped<IPasswordHasher, PasswordHasherService>()
                 .AddScoped<ICurrentUser, CurrentUserService>()
-                .AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+                .AddScoped<ITokenGenerator, JwtTokenGenerator>();
 
             services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

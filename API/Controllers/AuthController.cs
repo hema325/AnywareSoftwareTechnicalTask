@@ -1,5 +1,7 @@
 using Application.Authentication.Commands.Login;
+using Application.Authentication.Commands.RefreshToken;
 using Application.Authentication.Commands.Register;
+using Application.Authentication.Commands.RevokeRefreshToken;
 using Application.Authentication.Dtos;
 using Application.Authentication.Queries.GetCurrentUser;
 using Application.Common.Authentication;
@@ -21,17 +23,31 @@ namespace API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<JwtToken>> Register(RegisterCommand command, CancellationToken cancellationToken)
+        public async Task<ActionResult<TokenResult>> Register(RegisterCommand command, CancellationToken cancellationToken)
         {
             var token = await _sender.Send(command, cancellationToken);
             return Ok(token);
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<JwtToken>> Login(LoginCommand command, CancellationToken cancellationToken)
+        public async Task<ActionResult<TokenResult>> Login(LoginCommand command, CancellationToken cancellationToken)
         {
             var token = await _sender.Send(command, cancellationToken);
             return Ok(token);
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<TokenResult>> RefreshToken(RefreshTokenCommand command, CancellationToken cancellationToken)
+        {
+            var token = await _sender.Send(command, cancellationToken);
+            return Ok(token);
+        }
+
+        [HttpPost("revoke-refresh-token")]
+        public async Task<IActionResult> RevokeRefreshToken(RevokeRefreshTokenCommand command, CancellationToken cancellationToken)
+        {
+            await _sender.Send(command, cancellationToken);
+            return NoContent();
         }
 
         [Authorize]

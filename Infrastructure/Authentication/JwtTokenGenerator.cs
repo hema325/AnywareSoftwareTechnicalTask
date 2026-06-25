@@ -2,13 +2,14 @@ using Application.Common.Authentication;
 using Infrastructure.Authentication.Settings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace Infrastructure.Authentication
 {
-    internal sealed class JwtTokenGenerator : IJwtTokenGenerator
+    internal sealed class JwtTokenGenerator : ITokenGenerator
     {
         private readonly JwtSettings _settings;
 
@@ -17,7 +18,7 @@ namespace Infrastructure.Authentication
             _settings = settings.Value;
         }
 
-        public JwtToken Generate(User user)
+        public TokenResult Generate(User user)
         {
             var issuedAt = DateTime.UtcNow;
             var expiresAt = issuedAt.AddMinutes(_settings.ExpiryMinutes);
@@ -44,13 +45,21 @@ namespace Infrastructure.Authentication
 
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return new JwtToken
+            return new TokenResult
             {
                 AccessToken = accessToken,
+                RefreshToken = GenerateRefreshToken(),
                 TokenType = "Bearer",
                 IssuedAt = issuedAt,
-                ExpiresAt = expiresAt
+                ExpiresAt = expiresAt,
+                RefreshTokenExpiresAt = issuedAt.AddDays(_settings.RefreshTokenExpiryDays)
             };
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var bytes = RandomNumberGenerator.GetBytes(64);
+            return Convert.ToBase64String(bytes);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository contains a .NET Task Management Backend API built for the Anyware Software .NET backend technical task. The API supports user registration, login, current-user profile retrieval, admin user management, task management, JWT authentication, Redis caching, SQL Server persistence, domain events, and simple background task processing.
+This repository contains a .NET Task Management Backend API built for the Anyware Software .NET backend technical task. The API supports user registration, login, refresh-token rotation, refresh-token revocation, current-user profile retrieval, admin user management, task management, JWT authentication, Redis caching, SQL Server persistence, domain events, and simple background task processing.
 
 The implementation was verified against the provided technical task PDF and the current source code. Functionality that is not present in the codebase is explicitly called out in the compliance matrix and notes below.
 
@@ -42,6 +42,7 @@ Primary flow:
 
 - User registration and login
 - JWT access token generation
+- Refresh-token generation, persistence, rotation, and revocation
 - Current authenticated user profile endpoint
 - Seeded users, including a default admin
 - Admin-only user list, user lookup, user creation, user update, and user deletion
@@ -81,6 +82,16 @@ The application uses SQL Server through EF Core. Migrations are stored in `Infra
 | `DeletedAt` | Nullable deletion timestamp |
 | `DeletedBy` | Nullable deleter user id |
 
+#### `RefreshTokens`
+
+| Column | Notes |
+|---|---|
+| `Id` | Integer primary key, identity |
+| `Token` | Required string, max length 200, unique index |
+| `ExpiresAt` | Refresh-token expiration timestamp |
+| `RevokedAt` | Nullable revocation timestamp |
+| `UserId` | Required foreign key to `Users.Id` |
+
 #### `TaskItems`
 
 | Column | Notes |
@@ -102,7 +113,9 @@ The application uses SQL Server through EF Core. Migrations are stored in `Infra
 ### Relationships and Filters
 
 - `User` has many `TaskItems`.
+- `User` has many `RefreshTokens`.
 - `TaskItem.OwnerId` references `User.Id`.
+- `RefreshToken.UserId` references `User.Id`.
 - The EF model configures cascade delete at the relationship level.
 - The save interceptor converts deletes into soft deletes.
 - A global query filter excludes `AuditableEntity` records where `IsDeleted = true`.
@@ -121,8 +134,10 @@ The OpenAPI document is mapped at:
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/Auth/register` | Anonymous | Register a user and return a JWT |
-| `POST` | `/api/Auth/login` | Anonymous | Login and return a JWT |
+| `POST` | `/api/Auth/register` | Anonymous | Register a user and return access and refresh tokens |
+| `POST` | `/api/Auth/login` | Anonymous | Login and return access and refresh tokens |
+| `POST` | `/api/Auth/refresh` | Anonymous | Rotate a valid refresh token and return new access and refresh tokens |
+| `POST` | `/api/Auth/revoke-refresh-token` | Anonymous | Revoke an active refresh token |
 | `GET` | `/api/Auth/me` | Authenticated | Return the current user's profile |
 
 ### Users
@@ -153,6 +168,16 @@ All task endpoints require authentication.
 
 Authentication uses JWT bearer tokens.
 
+Register and login responses include:
+
+- `accessToken`
+- `refreshToken`
+- `tokenType`
+- `issuedAt`
+- `expiresAt`
+- `refreshTokenExpiresAt`
+- `expiresIn`
+
 JWT claims include:
 
 - `jti`
@@ -168,7 +193,9 @@ Authorization is implemented with:
 
 Passwords are hashed with `Microsoft.AspNetCore.Identity.PasswordHasher<User>`.
 
-There is no refresh token implementation in the current codebase.
+Refresh tokens are generated with `RandomNumberGenerator.GetBytes(64)`, stored in SQL Server, and associated with a user. Calling `/api/Auth/refresh` validates that the submitted refresh token exists, is not revoked, and has not expired. The old token is revoked and a new access/refresh token pair is returned.
+
+Calling `/api/Auth/revoke-refresh-token` revokes an active refresh token by setting `RevokedAt`.
 
 ## Caching Strategy
 
@@ -251,7 +278,8 @@ Configuration is read from `API/appsettings.json`, environment variables, and st
     "Key": "SECRETTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
     "Issuer": "Ibrahim-Moawad",
     "Audience": "Ibrahim-Moawad",
-    "ExpiryMinutes": 60
+    "ExpiryMinutes": 60,
+    "RefreshTokenExpiryDays": 7
   }
 }
 ```
@@ -313,7 +341,6 @@ The application applies EF Core migrations and seeds configured users during sta
 
 ## Assumptions
 
-- The assignment allows JWT authentication without refresh tokens; refresh tokens are not implemented in the current codebase.
 - The assignment allows a simple background worker, so the queue is in memory rather than a durable external queue.
 - Task duplicate detection is based on the current UTC date because the application stores audit dates with `DateTime.UtcNow`.
 - Redis is used only for the `Get Task by ID` endpoint, matching the PDF requirement.
@@ -366,7 +393,6 @@ dotnet build AnywareSoftwareTechnicalTask.slnx
 Result:
 
 - Build succeeded.
-- 13 compiler warnings were reported, mostly nullable-reference warnings, one obsolete EF Core API warning, and possible null Redis connection configuration warnings.
 
 ## Technical Task Compliance Matrix
 
@@ -413,7 +439,7 @@ Result:
 | Docker support bonus | ✅ Implemented | Dockerfile and Compose for API, SQL Server, Redis |
 | Unit tests bonus | ❌ Not Implemented | No test project or automated tests found |
 | Clean logging bonus | ✅ Implemented | MediatR logging behavior and worker/cache logging |
-| Refresh token implementation bonus | ❌ Not Implemented | No refresh token model, endpoint, or service found in the current codebase |
+| Refresh token implementation bonus | ✅ Implemented | `RefreshTokens` table, refresh-token generation, login/register persistence, `/api/Auth/refresh`, and `/api/Auth/revoke-refresh-token` |
 | Soft delete for users bonus | ✅ Implemented | Save interceptor converts deletes to soft deletes for auditable entities |
 | Short video walkthrough deliverable | ❌ Not Implemented | No video artifact is present in the repository |
 
@@ -431,7 +457,7 @@ Result:
 
 - Add automated tests for authentication, authorization, task ownership, duplicate-task validation, cache invalidation, and background processing.
 - Replace development JWT secrets and SQL credentials with secret-manager or environment-specific production secrets.
-- Add the planned refresh token flow if longer-lived sessions are required.
+- Store only hashed refresh tokens instead of raw token values if the threat model requires database-resilient token secrecy.
 - Add pagination and filtering for user and task list endpoints.
 - Initialize non-nullable entity properties or mark them as `required` to remove nullable-reference build warnings.
 - Update the EF Core query filter helper to avoid the obsolete `GetQueryFilter()` API warning.
@@ -447,7 +473,7 @@ Result:
 - User deletion and task deletion are soft deletes through the shared auditable-entity interceptor.
 - Ownership is enforced for task reads from both SQL Server and Redis.
 - The solution currently has no automated test project.
-- The solution was verified with `dotnet build AnywareSoftwareTechnicalTask.slnx`; the build succeeded with warnings.
+- The solution was verified with `dotnet build AnywareSoftwareTechnicalTask.slnx`; the build succeeded.
 
 ## Walkthrough Guide
 
@@ -457,7 +483,7 @@ This section maps the implementation to the topics requested for the task walkth
 |---|---|
 | Project structure | Four projects: `API`, `Application`, `Domain`, and `Infrastructure` |
 | Architecture approach | DDD-style layering, CQRS with MediatR, application contracts, infrastructure implementations, EF Core interceptors |
-| Authentication and authorization flow | Register/login returns JWT; protected routes use `[Authorize]`; admin routes use `[HasRole(UserRole.Admin)]` |
+| Authentication and authorization flow | Register/login return access and refresh tokens; `/api/Auth/refresh` rotates refresh tokens; protected routes use `[Authorize]`; admin routes use `[HasRole(UserRole.Admin)]` |
 | Seeded admin user | `admin@example.com` / `Admin123!`, inserted on startup when the users table is empty |
 | Implemented user and admin APIs | Auth endpoints plus admin-only user list, lookup, create, update, and delete |
 | Implemented task APIs | Authenticated task list, lookup, create, status update, and delete |

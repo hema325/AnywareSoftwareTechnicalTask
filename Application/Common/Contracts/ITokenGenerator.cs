@@ -2,8 +2,8 @@ using Application.Common.Authentication;
 
 namespace Application.Common.Contracts
 {
-    public interface IJwtTokenGenerator
+    public interface ITokenGenerator
     {
-        JwtToken Generate(User user);
+        TokenResult Generate(User user);
     }
 }

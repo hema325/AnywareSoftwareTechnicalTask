@@ -6,23 +6,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Authentication.Commands.Login
 {
-    internal sealed class LoginCommandHandler : IRequestHandler<LoginCommand, JwtToken>
+    internal sealed class LoginCommandHandler : IRequestHandler<LoginCommand, TokenResult>
     {
         private readonly IAppDbContext _context;
         private readonly IPasswordHasher _passwordHasher;
-        private readonly IJwtTokenGenerator _tokenGenerator;
+        private readonly ITokenGenerator _tokenGenerator;
 
         public LoginCommandHandler(
             IAppDbContext context,
             IPasswordHasher passwordHasher,
-            IJwtTokenGenerator tokenGenerator)
+            ITokenGenerator tokenGenerator)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _tokenGenerator = tokenGenerator;
         }
 
-        public async Task<JwtToken> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<TokenResult> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
@@ -32,7 +32,18 @@ namespace Application.Authentication.Commands.Login
                 throw new UnauthorizedException("Invalid email or password.");
             }
 
-            return _tokenGenerator.Generate(user);
+            var token = _tokenGenerator.Generate(user);
+
+            _context.RefreshTokens.Add(new Domain.Entities.RefreshToken
+            {
+                Token = token.RefreshToken,
+                ExpiresAt = token.RefreshTokenExpiresAt,
+                UserId = user.Id
+            });
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return token;
         }
     }
 }

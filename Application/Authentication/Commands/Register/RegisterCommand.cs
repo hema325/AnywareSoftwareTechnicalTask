@@ -3,5 +3,5 @@ using MediatR;
 
 namespace Application.Authentication.Commands.Register
 {
-    public record RegisterCommand(string Name, string Email, string Password) : IRequest<JwtToken>;
+    public record RegisterCommand(string Name, string Email, string Password) : IRequest<TokenResult>;
 }

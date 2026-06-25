@@ -4,23 +4,23 @@ using MediatR;
 
 namespace Application.Authentication.Commands.Register
 {
-    internal sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, JwtToken>
+    internal sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, TokenResult>
     {
         private readonly IAppDbContext _context;
         private readonly IPasswordHasher _passwordHasher;
-        private readonly IJwtTokenGenerator _tokenGenerator;
+        private readonly ITokenGenerator _tokenGenerator;
 
         public RegisterCommandHandler(
             IAppDbContext context,
             IPasswordHasher passwordHasher,
-            IJwtTokenGenerator tokenGenerator)
+            ITokenGenerator tokenGenerator)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _tokenGenerator = tokenGenerator;
         }
 
-        public async Task<JwtToken> Handle(RegisterCommand request, CancellationToken cancellationToken)
+        public async Task<TokenResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
             var user = new User
             {

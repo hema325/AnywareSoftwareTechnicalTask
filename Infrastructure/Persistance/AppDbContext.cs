@@ -14,11 +14,11 @@ namespace Infrastructure.Persistance
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyGlobalQueryFilter<AuditableEntity>(e => !e.IsDeleted);
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
 
         public DbSet<User> Users { get; private set; }
         public DbSet<TaskItem> TaskItems { get; private set; }
+        public DbSet<RefreshToken> RefreshTokens { get; private set; }
     }
 }
