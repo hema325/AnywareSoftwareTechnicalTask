@@ -1,0 +1,51 @@
+
+services:
+    sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        container_name: sqlserver
+        hostname: sqlserver
+        networks:
+        - app-network
+        volumes: 
+        - sqldata:/var/opt/mssql
+        environment:
+            - ACCEPT_EULA=Y
+            - SA_PASSWORD=StrongPassw0rd!
+            - MSSQL_PID=Developer
+        restart: unless-stopped
+    redis:
+        image: redis:latest
+        container_name: redis
+        hostname: redis
+        networks:
+        - app-network
+        volumes:
+        - redisdata:/data
+        restart: unless-stopped
+    api:
+        image: hemamoawad/task-manager-software-anywhere-api:latest
+        build:
+            context: .
+            dockerfile: API/Dockerfile
+        container_name: api
+        hostname: api
+        networks:
+        - app-network
+        ports:
+        - 8080:8080
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_URLS=http://+:8080
+            - ConnectionStrings__SqlConnection=server=sqlserver;Database=TaskManagerDB;User Id=sa;Password=StrongPassw0rd!;TrustServerCertificate=True;
+            - ConnectionStrings__RedisConnection=redis:6379
+        restart: unless-stopped
+        depends_on:
+            - sqlserver
+            - redis        
+
+volumes:
+    sqldata:
+    redisdata:
+
+networks:
+  app-network:

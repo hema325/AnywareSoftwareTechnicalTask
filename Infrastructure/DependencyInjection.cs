@@ -24,7 +24,7 @@ namespace Infrastructure
             // database
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                options.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
                 options.AddInterceptors(sp.GetRequiredService<UpdateAuditableEntitiesInterceptor>());
                 options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
 
@@ -78,7 +78,7 @@ namespace Infrastructure
             .AddScoped<ICache, RedisCacheService>()
                 .AddSingleton<IConnectionMultiplexer>(_ =>
                 {
-                    var connectionString = configuration["Redis:ConnectionString"]!;
+                    var connectionString = configuration.GetConnectionString("RedisConnection");
                     return ConnectionMultiplexer.Connect(connectionString);
                 });
 
