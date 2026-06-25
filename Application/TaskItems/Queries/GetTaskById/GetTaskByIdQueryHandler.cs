@@ -36,7 +36,7 @@ namespace Application.TaskItems.Queries.GetTaskById
                 await _cache.SetAsync(key, task, TimeSpan.FromMinutes(5), cancellationToken);
             }
 
-            if (task is null)
+            if (task is null || task.OwnerId != _currentUser.Id)
             {
                 throw new NotFoundException($"Task {request.Id} was not found.");
             }
