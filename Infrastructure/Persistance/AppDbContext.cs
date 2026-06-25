@@ -1,5 +1,4 @@
-﻿using Infrastructure.Persistance.Extensions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace Infrastructure.Persistance
