@@ -20,29 +20,24 @@ namespace Infrastructure.Persistance
 
         public async Task InitializeAsync()
         {
-            if (_context.Database.GetPendingMigrations().Any())
+            if ((await _context.Database.GetPendingMigrationsAsync()).Any())
             {
                 await _context.Database.MigrateAsync();
             }
 
             if (!await _context.Users.AnyAsync())
             {
-                await SeedUsersAsync();
+                var users = _seedSettings.Users.Select(user => new User
+                {
+                    Name = user.Name,
+                    Email = user.Email,
+                    HashedPassword = _passwordHasher.HashPassword(user.Password),
+                    Role = user.Role
+                });
+
+                await _context.Users.AddRangeAsync(users);
+                await _context.SaveChangesAsync();
             }
-        }
-
-        private async Task SeedUsersAsync()
-        {
-            var users = _seedSettings.Users.Select(user => new User
-            {
-                Name = user.Name,
-                Email = user.Email,
-                HashedPassword = _passwordHasher.HashPassword(user.Password),
-                Role = user.Role
-            });
-
-            await _context.Users.AddRangeAsync(users);
-            await _context.SaveChangesAsync();
         }
     }
 }

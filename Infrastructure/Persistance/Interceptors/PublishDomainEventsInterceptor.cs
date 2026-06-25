@@ -47,6 +47,7 @@ namespace Infrastructure.Persistance.Interceptors
             // publish domain events
             var publishTasks = _domainEvents.Select(e => _publisher.Publish(e, cancellationToken));
             await Task.WhenAll(publishTasks);
+            _domainEvents.Clear();
 
             return await base.SavedChangesAsync(eventData, result, cancellationToken);
         }

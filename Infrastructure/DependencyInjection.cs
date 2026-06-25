@@ -25,6 +25,7 @@ namespace Infrastructure
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                options.AddInterceptors(sp.GetRequiredService<UpdateAuditableEntitiesInterceptor>());
                 options.AddInterceptors(sp.GetRequiredService<PublishDomainEventsInterceptor>());
 
             });
@@ -32,6 +33,7 @@ namespace Infrastructure
             services
                 .AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>())
                 .AddScoped<AppDbContextInitializer>()
+                .AddScoped<UpdateAuditableEntitiesInterceptor>()
                 .AddScoped<PublishDomainEventsInterceptor>();
 
             services.Configure<SeedSettings>(configuration.GetSection(SeedSettings.SectionName));

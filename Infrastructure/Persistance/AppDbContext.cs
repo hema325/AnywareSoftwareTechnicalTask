@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Infrastructure.Persistance.Extensions;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace Infrastructure.Persistance
@@ -13,6 +14,7 @@ namespace Infrastructure.Persistance
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.ApplyGlobalQueryFilter<AuditableEntity>(e => !e.IsDeleted);
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
 
