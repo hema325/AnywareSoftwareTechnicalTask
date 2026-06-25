@@ -33,7 +33,18 @@ namespace Application.Authentication.Commands.Register
             _context.Users.Add(user);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return _tokenGenerator.Generate(user);
+            var token = _tokenGenerator.Generate(user);
+
+            _context.RefreshTokens.Add(new Domain.Entities.RefreshToken
+            {
+                Token = token.RefreshToken,
+                ExpiresAt = token.RefreshTokenExpiresAt,
+                UserId = user.Id
+            });
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return token;
         }
     }
 }
