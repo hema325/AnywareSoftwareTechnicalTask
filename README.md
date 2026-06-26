@@ -3,6 +3,7 @@
 ## Quick Access
 
 - Live Demo URL: [http://142.132.210.239:8080/swagger/index.html](http://142.132.210.239:8080/swagger/index.html)
+- Technical Project Walkthrough (Video): [[http://142.132.210.239:8080/swagger/index.html](https://drive.google.com/file/d/1pYK0TD33vQb3rQwTP5mQAAaTfqnWEDfQ/view?usp=sharing)](https://drive.google.com/file/d/1pYK0TD33vQb3rQwTP5mQAAaTfqnWEDfQ/view?usp=sharing)
 - GitHub Repository URL: [https://github.com/hema325/AnywareSoftwareTechnicalTask](https://github.com/hema325/AnywareSoftwareTechnicalTask)
 - Docker Hub Repository URL: [https://hub.docker.com/r/hemamoawad/task-manager-software-anywhere-api](https://hub.docker.com/r/hemamoawad/task-manager-software-anywhere-api)
 
