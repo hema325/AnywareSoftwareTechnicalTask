@@ -10,13 +10,11 @@ namespace Application.TaskItems.Commands.CreateTask
     {
         private readonly IAppDbContext _context;
         private readonly ICurrentUser _currentUser;
-        private readonly ITaskQueue _taskQueue;
 
-        public CreateTaskCommandHandler(IAppDbContext context, ICurrentUser currentUser, ITaskQueue taskQueue)
+        public CreateTaskCommandHandler(IAppDbContext context, ICurrentUser currentUser)
         {
             _context = context;
             _currentUser = currentUser;
-            _taskQueue = taskQueue;
         }
 
         public async Task<int> Handle(CreateTaskCommand request, CancellationToken cancellationToken)

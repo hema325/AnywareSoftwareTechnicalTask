@@ -1,5 +1,3 @@
-using Application.Common.Contracts;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 

@@ -2,8 +2,7 @@
 
 ## Quick Access
 
-- Live Demo API URL: `TODO: add deployed API base URL`
-- Swagger URL: `TODO: add deployed Swagger URL` - reviewers can click this URL and test the API immediately.
+- Live Demo URL: `deployed API swagger URL`
 - GitHub Repository URL: [https://github.com/hema325/AnywareSoftwareTechnicalTask](https://github.com/hema325/AnywareSoftwareTechnicalTask)
 - Docker Hub Repository URL: [https://hub.docker.com/r/hemamoawad/task-manager-software-anywhere-api](https://hub.docker.com/r/hemamoawad/task-manager-software-anywhere-api)
 
